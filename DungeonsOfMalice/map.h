@@ -47,7 +47,9 @@ public:
 	int h;
 	int w;
 	char *name;
+	int numRooms;
 	tile** map_tiles;
+	room* map_rooms;
 	
 
 	Map();
@@ -61,7 +63,8 @@ public:
 	void BFS(int startx, int starty,int maxf);		// breadth first search in order to place the exit as far away from the entrance
 	void divide(BSP* parent,int nrdiv);				// division for the BSP
 	void GenerateCave(int cycles,int chance, int birth, int death);		// this generates organic caves using cellular automata
-	void GenerateDungeon();												// this will eventaly generate dungeons, eventualy
+	void GenerateDungeon(int nrdiv); // this will eventaly generate dungeons, eventualy
+	void GenerateRooms();
 
 
 };

@@ -12,6 +12,8 @@ Map::Map()				// the basics constructors, nothing too fancy here
 	h = 0;
 	map_tiles = NULL;
 	name = NULL;
+	numRooms = 0;
+	map_rooms = NULL;
 }
 Map::Map(SDL_Surface* Context, int newh, int neww, char* newname)
 {
@@ -26,6 +28,8 @@ Map::Map(SDL_Surface* Context, int newh, int neww, char* newname)
 	{
 		map_tiles[i] = new tile[w];
 	}
+	numRooms = 0;
+	map_rooms = NULL;
 }
 Map::~Map()
 {
@@ -39,6 +43,7 @@ Map::~Map()
 		}
 		delete[] map_tiles;
 	}
+	delete[] map_rooms;
 
 }
 
@@ -295,7 +300,7 @@ void Map::GenerateCave(int cycles,int chance,int birth,int death)		// here we us
 
 }
 void Map::divide(BSP* parent,int nrdiv)			// binary space partitioning division, I heard this generates nice rooms, kinda WIP, also screw pointers and memory in general
-												// I should learn java...
+												// I should learn java... LATER EDIT: who needs java anyway
 {
 	static int divs = 0;
 	divs++;
@@ -307,10 +312,23 @@ void Map::divide(BSP* parent,int nrdiv)			// binary space partitioning division,
 	parent->l->r = NULL;
 	parent->r->r = NULL;
 	parent->r->l = NULL;
-	parent->hor = rand() % 2;
+	if (parent->h <= 10)
+	{
+		parent->hor = true;
+	}
+	else if (parent->w <= 10)
+	{
+		parent->hor = false;
+	}
+	else
+	{
+		parent->hor = rand() % 2;
+	}
+	
+
 	if (parent->hor)
 	{
-		parent->pos = 5 + rand() % (parent->h - 5);
+		parent->pos = 5 + rand() % (parent->h - 10);		
 		parent->l->x = parent->x;
 		parent->l->y = parent->y;
 		parent->l->h = parent->pos;
@@ -322,7 +340,7 @@ void Map::divide(BSP* parent,int nrdiv)			// binary space partitioning division,
 	}
 	else
 	{
-		parent->pos = 5 + rand() % (parent->w - 5);
+		parent->pos = 5 + rand() % (parent->w - 10);
 		parent->l->x = parent->x;
 		parent->l->y = parent->y;
 		parent->l->h = parent->h;
@@ -355,33 +373,121 @@ void clearbsp(BSP *start)				// couldn't write this to save my life, I was close
 
 void bsptomap(BSP *start, Map* thismap)			// this interates through teh BSP leafs and generates rooms, or at least should
 {
+	//convers the BSP tree into acutal rooms
+	static int tag;
 	if (start->l)
 		bsptomap(start->l,thismap);
 	if (start->r)
 		bsptomap(start->r,thismap);
 	if (!start->r && !start->l) // if leaf
 	{
-		for (int i = start->y; i < start->h; i++)
+		/*
+		int twothird = 2 * (start->h / 3);
+		thismap->map_rooms[tag].h = twothird + rand() % (start->h - twothird);
+		twothird = 2 * (start->w / 3);
+		thismap->map_rooms[tag].w = twothird + rand() % (start->w - twothird);
+
+		thismap->map_rooms[tag].x = start->x + rand() % (start->w - thismap->map_rooms[tag].w);
+		thismap->map_rooms[tag].y = start->y + rand() % (start->h - thismap->map_rooms[tag].h);
+
+		*/ // <- something is wrong with this section
+		thismap->map_rooms[tag].h = start->h;
+		thismap->map_rooms[tag].w = start->w;
+		thismap->map_rooms[tag].x = start->x;
+		thismap->map_rooms[tag].y = start->y;
+
+		tag++;
+
+
+		/*
+		
+		for (int i = start->y; i < start->y + start->h; i++)
 		{
-			for (int j = start->x; j < start->w; j++)
+			for (int j = start->x; j < start->x + start->w; j++)
 			{
-				if (i == start->y || i == start->h - 1 || j == start->x || j == start->w - 1)
+				if (i == start->y || i == start->y + start->h - 1 || j == start->x || j == start->x + start->w - 1)
 				{
 					thismap->map_tiles[i][j].type = 1;
 					thismap->map_tiles[i][j].passable = true; //for debugging reasons
+					thismap->map_tiles[i][j].id = tag;
 				}
 				else
 				{
 					thismap->map_tiles[i][j].type = 0;
 					thismap->map_tiles[i][j].passable = true;
+					thismap->map_tiles[i][j].id = tag;
 				}
 			}
 		}
+		
+		*/
+		
+
+		//no longer filling whole BSP division with room, now that bsp works fine, we gneerate smaller rooms
+		//thismap->numRooms++;
 
 	}
+	//finaly the BSP rectangles work fine, now to generate actual rooms and connect them
 }
 
-void Map::GenerateDungeon()
+void Map::GenerateRooms()
+{
+	clearTiles(this->map_tiles);
+	for (int i = 0; i < h; i++)
+	{
+		for (int j = 0; j < w; j++)
+		{
+			map_tiles[i][j].type = 1;
+			map_tiles[i][j].passable = true; // all passable for now
+
+		}
+	}
+	for (int k = 0; k < numRooms; k++)
+	{
+		for (int i = map_rooms[k].y; i < map_rooms[k].y + map_rooms[k].h; i++)
+		{
+			for (int j = map_rooms[k].x; j < map_rooms[k].x + map_rooms[k].w; j++)
+			{
+				if (i == map_rooms[k].y || i == map_rooms[k].y + map_rooms[k].h - 1 || j == map_rooms[k].x || j == map_rooms[k].x + map_rooms[k].w - 1)
+				{
+					//shit
+				}
+				else
+				{
+					map_tiles[i][j].type = 0;
+				}
+				map_tiles[i][j].id = k;
+			}
+		}
+	}
+	FILE* tmp;
+	tmp = fopen("dungeon.txt", "w");
+	{
+		for (int i = 0; i < h; i++)
+		{
+			for (int j = 0; j < w; j++)
+			{
+				if (map_tiles[i][j].type == 0)
+				{
+					fprintf(tmp, "%c", '.');
+				}
+				else
+				{
+					fprintf(tmp, "%c", '#');
+				}
+			}
+			fprintf(tmp, "\n");
+		}
+
+		for (int i = 0; i < numRooms; i++)
+		{
+			fprintf(tmp, "ROOM %i: \n X: %d \n Y: %d \n W: %d \n H: %d \n", i, map_rooms[i].x, map_rooms[i].y, map_rooms[i].w, map_rooms[i].h);
+		}
+	}
+	fclose(tmp);
+}
+
+void Map::GenerateDungeon(int nrdiv)
 {
 	
 	srand((unsigned int)time(NULL));
@@ -395,11 +501,15 @@ void Map::GenerateDungeon()
 	start->parent = NULL;
 	start->l = NULL;
 	start->r = NULL;
-	divide(start,3);
+	divide(start,nrdiv);
 
 	clearTiles(map_tiles);
+	numRooms = 1 << nrdiv-1; // 2^n
+	map_rooms = new room[numRooms];
 
 	bsptomap(start, this);
+	GenerateRooms();
+	
 
 
 
