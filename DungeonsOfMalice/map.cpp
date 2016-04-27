@@ -395,7 +395,7 @@ void Map::GenerateDungeon()
 	start->parent = NULL;
 	start->l = NULL;
 	start->r = NULL;
-	divide(start,2);
+	divide(start,3);
 
 	clearTiles(map_tiles);
 

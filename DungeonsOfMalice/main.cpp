@@ -25,8 +25,8 @@ int main(int argc, char **argv)
 	
 	
 	Map MyMap(Screen, 64, 64, "Penis");
-	MyMap.GenerateCave(2,6,4,3);
-	//MyMap.GenerateDungeon();
+	//MyMap.GenerateCave(2,6,4,3);
+	MyMap.GenerateDungeon();
 	Camera MyCamera(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	Renderer MyRenderer(Screen, &MyMap, &MyCamera);
 	TextRenderer MyTextRenderer;
@@ -38,9 +38,9 @@ int main(int argc, char **argv)
 	StateControl StateController(&Player,&MyMap);
 
 
-	StateController.numMobs = 1;
-	StateController.creatureList = new Creature*[1];
-	StateController.creatureList[0] = &aiOne;
+	//StateController.numMobs = 0;
+	//StateController.creatureList = new Creature*[1];
+	//StateController.creatureList[0] = &aiOne; //remove AI or it will wander outside of map bounds because no collision
 
 	Player.x = MyMap.entrance_x;
 	Player.y = MyMap.entrance_y;
