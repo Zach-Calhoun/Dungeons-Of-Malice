@@ -299,11 +299,13 @@ void Map::GenerateCave(int cycles,int chance,int birth,int death)		// here we us
 	BFS(startx, starty, areas[maxi]);		// do the BFS to place the exit
 
 }
-void Map::divide(BSP* parent,int nrdiv)			// binary space partitioning division, I heard this generates nice rooms, kinda WIP, also screw pointers and memory in general
+void Map::divide(BSP* parent,int nrdiv, int crdepth)			// binary space partitioning division, I heard this generates nice rooms, kinda WIP, also screw pointers and memory in general
 												// I should learn java... LATER EDIT: who needs java anyway
 {
 	static int divs = 0;
 	divs++;
+	crdepth++;
+
 	parent->l = new BSP;
 	parent->r = new BSP;
 	parent->l->parent = parent;
@@ -312,48 +314,54 @@ void Map::divide(BSP* parent,int nrdiv)			// binary space partitioning division,
 	parent->l->r = NULL;
 	parent->r->r = NULL;
 	parent->r->l = NULL;
-	if (parent->h <= 10)
+
+	
+	if (parent->h / parent->w > 2)
 	{
 		parent->hor = true;
 	}
-	else if (parent->w <= 10)
+	else if (parent->w / parent->h > 2)
 	{
 		parent->hor = false;
 	}
+	
 	else
 	{
 		parent->hor = rand() % 2;
 	}
 	
+	//parent->hor = rand() % 2;
 
 	if (parent->hor)
 	{
-		parent->pos = 5 + rand() % (parent->h - 10);		
+		int third = parent->h / 3;
+		parent->pos = third + rand() % third ;		
 		parent->l->x = parent->x;
 		parent->l->y = parent->y;
 		parent->l->h = parent->pos;
 		parent->l->w = parent->w;
 		parent->r->x = parent->x;
-		parent->r->y = parent->pos;
+		parent->r->y = parent->y + parent->pos;
 		parent->r->h = parent->h - parent->pos;
 		parent->r->w = parent->w;
 	}
 	else
 	{
-		parent->pos = 5 + rand() % (parent->w - 10);
+		int third = parent->w / 3;
+		parent->pos = third + rand() % third;
 		parent->l->x = parent->x;
 		parent->l->y = parent->y;
 		parent->l->h = parent->h;
 		parent->l->w = parent->pos;
-		parent->r->x = parent->pos;
+		parent->r->x = parent->x + parent->pos;
 		parent->r->y = parent->y;
 		parent->r->h = parent->h;
 		parent->r->w = parent->w - parent->pos;
 	}
-	if (divs < nrdiv)
+	if (crdepth < nrdiv)
 	{
-		divide(parent->l,nrdiv);
-		divide(parent->r,nrdiv);
+		divide(parent->l,nrdiv,crdepth);
+		divide(parent->r,nrdiv,crdepth);
 	}
 	
 
@@ -381,7 +389,7 @@ void bsptomap(BSP *start, Map* thismap)			// this interates through teh BSP leaf
 		bsptomap(start->r,thismap);
 	if (!start->r && !start->l) // if leaf
 	{
-		/*
+		
 		int twothird = 2 * (start->h / 3);
 		thismap->map_rooms[tag].h = twothird + rand() % (start->h - twothird);
 		twothird = 2 * (start->w / 3);
@@ -390,12 +398,13 @@ void bsptomap(BSP *start, Map* thismap)			// this interates through teh BSP leaf
 		thismap->map_rooms[tag].x = start->x + rand() % (start->w - thismap->map_rooms[tag].w);
 		thismap->map_rooms[tag].y = start->y + rand() % (start->h - thismap->map_rooms[tag].h);
 
-		*/ // <- something is wrong with this section
+		 // <- something is wrong with this section - not anymore I hope
+		/*
 		thismap->map_rooms[tag].h = start->h;
 		thismap->map_rooms[tag].w = start->w;
 		thismap->map_rooms[tag].x = start->x;
 		thismap->map_rooms[tag].y = start->y;
-
+		*/
 		tag++;
 
 
@@ -501,10 +510,10 @@ void Map::GenerateDungeon(int nrdiv)
 	start->parent = NULL;
 	start->l = NULL;
 	start->r = NULL;
-	divide(start,nrdiv);
+	divide(start,nrdiv,0);
 
 	clearTiles(map_tiles);
-	numRooms = 1 << nrdiv-1; // 2^n
+	numRooms = 1 << nrdiv; // 2^n
 	map_rooms = new room[numRooms];
 
 	bsptomap(start, this);

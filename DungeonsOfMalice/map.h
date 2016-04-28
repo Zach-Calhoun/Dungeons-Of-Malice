@@ -61,7 +61,7 @@ public:
 													// copy constructor, or could I?
 	int flood(int x, int y, int id);				// flood fill algorithm to calculate cave division area
 	void BFS(int startx, int starty,int maxf);		// breadth first search in order to place the exit as far away from the entrance
-	void divide(BSP* parent,int nrdiv);				// division for the BSP
+	void divide(BSP* parent,int nrdiv,int crdepth);				// division for the BSP
 	void GenerateCave(int cycles,int chance, int birth, int death);		// this generates organic caves using cellular automata
 	void GenerateDungeon(int nrdiv); // this will eventaly generate dungeons, eventualy
 	void GenerateRooms();

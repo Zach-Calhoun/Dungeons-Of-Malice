@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	
 	Map MyMap(Screen, 64, 64, "Penis");
 	//MyMap.GenerateCave(2,6,4,3);
-	MyMap.GenerateDungeon(5);
+	MyMap.GenerateDungeon(4);
 	Camera MyCamera(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	Renderer MyRenderer(Screen, &MyMap, &MyCamera);
 	TextRenderer MyTextRenderer;
