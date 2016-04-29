@@ -3,6 +3,7 @@
 #include "Res.h"
 #include "Creature.h"
 #include "Items.h"
+#include <list>
 
 class Creature;
 class Item;
@@ -21,11 +22,23 @@ struct tile									// basic map tile, not so basic
 	Object* crObject;
 };
 
-struct room									// no use for now, will be used in dungeon generation
+struct room									
 {
 	int x, y;
 	int w, h;
+	//list<int> neighbours;
+	
+	bool* neighbours;
+	bool isRoot;
+	int* cost;
+	int toRoot;
+	bool* connections;
+};
 
+struct leaf
+{
+	int x,y;
+	int w, h;
 };
 
 struct BSP									// Binary Space Partition structure for use in dungeon generation
@@ -50,6 +63,7 @@ public:
 	int numRooms;
 	tile** map_tiles;
 	room* map_rooms;
+	leaf* leaves;
 	
 
 	Map();
@@ -65,6 +79,7 @@ public:
 	void GenerateCave(int cycles,int chance, int birth, int death);		// this generates organic caves using cellular automata
 	void GenerateDungeon(int nrdiv); // this will eventaly generate dungeons, eventualy
 	void GenerateRooms();
+	void SpaningTree();
 
 
 };

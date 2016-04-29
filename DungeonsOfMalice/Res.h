@@ -1,8 +1,8 @@
 #ifndef RES_H_
 #define RES_H_ 1
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 400
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <SDL.h>
